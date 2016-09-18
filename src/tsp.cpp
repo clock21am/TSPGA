@@ -1,93 +1,63 @@
-#include <iostream>
-#include <limits>
-#include <assert.h>
 #include <bits/stdc++.h>
 using namespace std;
+static unsigned int city;
 class TSP
 {
 	public:
 		TSP(const double crossoverProbability, const double mutationProbability);
-
-		/* The constants used in this project */
-		static const unsigned int chromosones = 30, cities = 20, xMin = 0, xMax = 1000, yMin = 0, yMax = 500;
-
-		/* Generate a random population of chromosones */
+                
+		static const unsigned int chromosones = 30, cities = 20, xMin = 0, xMax = 500, yMin = 0, yMax = 500;
+		
 		void randomPopulation();
-
-		/* Create a new population using crossover and mutation */
+		
 		void nextPopulation();
 
-		/* Returns the fitness of the best chromosone */
 		double getBestFitness() const;
 
-		/* Returns a string representation of the best path */
 		std::string getBestPathString() const;
 
-		/* Returns the total distance of the best chromosone path */
 		double getLowestTotalDistance() const;
 
-		/* Returns the populations average length */
 		double getAverageDistance() const;
-	private:
+		
 		const double crossoverProbability, mutationProbability;
 
-		/* Gets the total distance of the supplied path */
 		double totalDistance(int const * const chromosone) const;
 
-		/* The coordinates for each city, (x,y) for the first city is found in (citiesX[0], citiesY[0]) */
 		double citiesX[cities], citiesY[cities];
 
-		/* The chromosone containing the shortest path */
-		int *bestChromosone;
+		int* bestChromosone;
 
-		/* Contains the current population of chromosones */
-		int (* solutions)[cities],
-			/* The two chromosones with the best fitness functions */
-			//bestChromosone1[cities], bestChromosone2[cities],
-			/* Used to store the new chromosones when creating a new population */
-			(* newPopulation)[cities];
+		int (*solutions)[cities],(*newPopulation)[cities];
 
-		/* Returns a random double r, 0 <= r <= max */
 		static double randomInclusive(const double max);
 
-		/* Returns a random double r, 0 <= r < max */
 		static double randomExclusive(const double max);
 
-		/* True if the two chromosones represent the same path */
 		static bool areChromosonesEqual(int const * const chromosoneA, int const * const chromosoneB);
 
-		/* Evaluate the fitness the supplied chromosone */
 		double evaluateFitness(const int * const chromosone) const;
 
-		/* Selects a chromosone from the current population using Roulette Wheel Selection.
-		 * Using the algorithm described in http://www.obitko.com/tutorials/genetic-algorithms/selection.php.
-		 */
 		int * rouletteSelection(double const * const fitness) const;
 
-		/* Replace the element at offspringIndex with the first element found in other that does not exist in offspringToRepair */
 		void repairOffspring(int * const offspringToRepair, int missingIndex, const int * const other);
 
-		/* Might swap one gene with another, depending on the mutation probability */
 		void mutate(int * const chromosone);
 
-		/* Cross over the parents to form new offspring using Multi-Point Crossover, collisions are handled as shown in lecture 5.
-		 * The chromosones might be a copy of their parents, depending on the crossover probability.
-		 */
 		void crossover(const int * const parentA, const int * const parentB, int * const offspringA, int * const offspringB);
 
-		/* Checks if the supplied chromosone is in newPopulation */
 		bool hasDuplicate(const int * const chromosone, size_t populationCount);
 
-		/* Copies the supplied chromosone to the new population */
 		void copyToNewPopulation(const int * const chromosone, size_t index);
 
-		/* Make the chromosone represent a path, which is chosen by random */
 		static void setRandomPath(int * const chromosone);
 };
+
 TSP::TSP(double crossoverProbability, double mutationProbability) : crossoverProbability(crossoverProbability),
-	mutationProbability(mutationProbability), solutions(new int[chromosones][cities]), newPopulation(new int[chromosones][cities])
-{
-	/* Seed the random number generator */
+	mutationProbability(mutationProbability) 
+{       
+        solutions = new int[chromosones][cities];
+        newPopulation = new int[chromosones][cities];
 	srand((unsigned int)time(NULL));
 	/* Use the same number to generate a specific sequence */
 	//srand(0);
@@ -491,10 +461,12 @@ double TSP::randomExclusive(double max)
 	//return ((double)rand() / ((double)RAND_MAX + 1) * max);
 	return ((double)rand() * max) / ((double)RAND_MAX + 1);
 }
-int main(int argc, const char *argv[])
+int main()
 {
-	/* 90% mutation probability, 2% mutation probability */
-	TSP *tsp = new TSP(0.9, 0.02);
+	double crossoverprobabilty,mutationprobobality;
+	cout<<"Enter the value of mutation probabilty and crossover probability\n";
+	cin>>crossoverprobabilty>>mutationprobobality;
+	TSP *tsp = new TSP(crossoverprobabilty,mutationprobobality);
 	size_t generations = 0, generationsWithoutImprovement = 0;
 	double bestFitness = -1;
 	double initialAverage = tsp->getAverageDistance();
@@ -509,21 +481,16 @@ int main(int argc, const char *argv[])
 		{
 			bestFitness = newFitness;
 			generationsWithoutImprovement = 0;
-			cout << "Best goal function: " << tsp->getBestFitness() << endl;
+			tsp->getBestFitness();
 		}
 		else
 		{
 			++generationsWithoutImprovement;
 		}
 	}
-	cout << "DONE!" << endl;
-	cout << "Number of generations: " << generations << endl;
-	cout << "Best chromosone info: " << endl;
+	
 	cout << "\t-Path: " << tsp->getBestPathString() << endl;
-	cout << "\t-Goal function: " << tsp->getBestFitness() << endl;
 	cout << "\t-Distance: " << tsp->getLowestTotalDistance() << endl;
-	cout << "Average distance: " << tsp->getAverageDistance() << endl;
-	cout << "Initial average: " << initialAverage << endl;
 	delete tsp;
 	return 0;
 }
